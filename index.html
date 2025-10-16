@@ -51,13 +51,35 @@
     <button class="btnOpcion" onclick="confirmarAsistencia(false)">❌ No voy</button>
   </div>
 
-  <script>
-    // Lista de invitados con su acompañante
-    const invitados = {
-      "fulanito funcos": "Jimena Córdoba",
-      "alexis villalba": "Lucía Torres Y Carla fachi",
-      "juan gómez": "Sofía Díaz"
-    };
+    <script>
+let invitados = {};
+
+// Cargar el archivo invitados.txt
+fetch("invitados.txt")
+  .then(response => response.text())
+  .then(texto => {
+    const lineas = texto.split("\n");
+    lineas.forEach(linea => {
+      const partes = linea.split(",");
+      if (partes.length === 2) {
+        const nombre = partes[0].trim();
+        const acompanante = partes[1].trim();
+        // Normalizamos el nombre para búsqueda insensible a mayúsculas y tildes
+        const key = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        invitados[key] = acompanante;
+      }
+    });
+    console.log("Invitados cargados:", invitados);
+  })
+  .catch(err => console.error("Error cargando invitados.txt:", err));
+
+// Función de normalización
+function normalizar(texto) {
+  return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+// El resto del código de verificación y envío permanece igual
+
 
     function normalizar(texto) {
       return texto.toLowerCase()
