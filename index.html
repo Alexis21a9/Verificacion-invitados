@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmación de Invitados</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    input, button {
+      margin: 8px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    .btnOpcion {
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btnOpcion:hover {
+      background-color: #357ABD;
+    }
+    #mensaje {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Confirmación de Invitados</h1>
+  <input type="text" id="nombre" placeholder="Ingrese su nombre">
+  <button onclick="verificarInvitado()">Verificar</button>
+
+  <div id="mensaje"></div>
+
+  <div id="opciones" style="display: none;">
+    <button class="btnOpcion" onclick="confirmarAsistencia(true)">✅ Voy</button>
+    <button class="btnOpcion" onclick="confirmarAsistencia(false)">❌ No voy</button>
+  </div>
+
+  <script>
+    // Lista de invitados con su acompañante
+    const invitados = {
+      "fulanito funcos": "Jimena Córdoba",
+      "alexis villalba": "Lucía Torres Y Carla fachi",
+      "juan gómez": "Sofía Díaz"
+    };
+
+    function normalizar(texto) {
+      return texto.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    let invitadoEncontrado = null;
+
+    function verificarInvitado() {
+      const nombre = document.getElementById("nombre").value.trim();
+      const msg = document.getElementById("mensaje");
+      const opciones = document.getElementById("opciones");
+
+      if (!nombre) {
+        msg.textContent = "Por favor, ingrese su nombre.";
+        msg.style.color = "red";
+        opciones.style.display = "none";
+        return;
+      }
+
+      const key = normalizar(nombre);
+      const acomp = invitados[key];
+
+      if (acomp) {
+        msg.textContent = `${nombre.toUpperCase()} lleva a ${acomp}.`;
+        msg.style.color = "green";
+        opciones.style.display = "block";
+        invitadoEncontrado = { nombre, acompanante: acomp };
+      } else {
+        msg.textContent = "Lo siento, no estás en la lista.";
+        msg.style.color = "red";
+        opciones.style.display = "none";
+        invitadoEncontrado = null;
+      }
+    }
+
+    function confirmarAsistencia(viene) {
+      if (!invitadoEncontrado) return;
+
+      // 🟢 Mostrar mensaje de confirmación antes de enviar
+      const textoConfirmacion = `${invitadoEncontrado.nombre} va con ${invitadoEncontrado.acompanante}.`;
+      const confirmar = confirm(`${textoConfirmacion}\n\n¿Desea confirmar que ${viene ? "ASISTIRÁ" : "NO ASISTIRÁ"}?`);
+
+      if (!confirmar) {
+        alert("No se envió ninguna respuesta.");
+        return;
+      }
+
+      // URL de Google Form
+      const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScMvzxj6LL3F-FxWJvlcaBfbgnB-vKVw6zReEeaAOYwtlGJmg/formResponse";
+
+      // Campos del formulario (IDs correctos)
+      const data = new FormData();
+      data.append("entry.2062533621", invitadoEncontrado.nombre);         // Nombre del invitado
+      data.append("entry.490039814", invitadoEncontrado.acompanante);   // Acompañante
+      data.append("entry.2005093304", viene ? "Si voy" : "No voy"); // Confirmación
+
+      fetch(formURL, {
+        method: "POST",
+        mode: "no-cors",
+        body: data
+      })
+      .then(() => {
+        alert(`Respuesta registrada: ${viene ? "✅ Asistirá" : "❌ No asistirá"}. ¡Gracias!`);
+        document.getElementById("opciones").style.display = "none";
+      })
+      .catch(error => {
+        console.error("Error al enviar:", error);
+        alert("Hubo un error al confirmar.");
+      });
+    }
+  </script>
+</body>
+</html>
