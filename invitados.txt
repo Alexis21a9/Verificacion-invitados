@@ -21,6 +21,7 @@ Acevedo Santino, Solo
 Candela Argañaraz, Sola
 Leandro Bechara, Solo
 Amparo Berganzola, Solo
+Amparo Bergansola, Solo
 Ana Carreras, Sola
 Ana Corbalan, Sola
 Miguel Dominguez, Solo
@@ -69,6 +70,7 @@ Milagros Norris, Sola
 Valentino Bortolozzo, Solo
 Mia Lucena, Sola
 Delfina Rodriguez, Sola
+
 
 
 
