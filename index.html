@@ -84,12 +84,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxqbLfiCOLk835GRMo6niJH
 
 // El resto del código de verificación y envío permanece igual
 fetch(API_URL)
-  .then(res => {
-      console.log(res); // esto te muestra el Response
-      return res.json();
-  })
-  .then(data => console.log(data))
-  .catch(err => console.error("Error al consultar confirmados:", err));
 
     function normalizar(texto) {
       return texto.toLowerCase()
@@ -99,7 +93,7 @@ fetch(API_URL)
 
     let invitadoEncontrado = null;
 
-    window.verificarInvitado = function() {
+    window.verificarInvitado() = function() {
       const nombre = document.getElementById("nombre").value.trim();
       const msg = document.getElementById("mensaje");
       const opciones = document.getElementById("opciones");
@@ -151,7 +145,7 @@ if (registrado) {
       msg.style.color = "red";
       opciones.style.display = "none";
     });
-}
+};
 
     function confirmarAsistencia(viene) {
       if (!invitadoEncontrado) return;
