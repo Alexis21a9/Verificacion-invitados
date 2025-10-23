@@ -134,7 +134,7 @@ fetch(API_URL)
     return normalizar(item["Nombre del Invitado"]) === key;
 
       if (registrado) {
-        msg.textContent = `${registrado.["Nombre del invitado"]} ya está registrado con ${registrado.["Nombre acompañante/s"]}.`;
+       msg.textContent = `${registrado["Nombre del invitado"]} ya está registrado con ${registrado["Nombre de acompañante/s"]}.`;
         msg.style.color = "orange";
         opciones.style.display = "none"; // no mostramos botones si ya confirmó
         invitadoEncontrado = null;
