@@ -80,7 +80,7 @@ fetch("invitados.txt")
 
 // Cargar lista de confirmados desde Google Sheets API
 function cargarConfirmados() {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:C?key=${API_KEY}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!B:C?key=${API_KEY}`;
   
   fetch(url)
     .then(res => res.json())
