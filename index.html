@@ -51,8 +51,13 @@
     <button class="btnOpcion" onclick="confirmarAsistencia(false)">❌ No voy</button>
   </div>
 
-    <script>
+<script>
+const SHEET_ID = "1UPb80Riwp8pLZkEB3KA3u3qNtC-eHNUEF-4gZULGugI"; // 👈 tu ID de hoja
+const API_KEY = "AIzaSyBFM3ZBXypWtwGY1zIt0ANiOykL6GbKWVQ";   // 👈 tu API key real
+const SHEET_NAME = "Invitados (Respuestas)";     // 👈 nombre exacto de tu hoja
+
 let invitados = {};
+let confirmados = new Set();
 
 // Cargar el archivo invitados.txt
 fetch("invitados.txt")
@@ -73,6 +78,23 @@ fetch("invitados.txt")
   })
   .catch(err => console.error("Error cargando invitados.txt:", err));
 
+// Cargar lista de confirmados desde Google Sheets API
+function cargarConfirmados() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:C?key=${API_KEY}`;
+  
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      if (!data.values) return;
+      data.values.slice(1).forEach(fila => {
+        const nombre = fila[1]; // columna B
+        if (nombre) confirmados.add(normalizar(nombre));
+      });
+      console.log("Confirmados:", confirmados);
+    })
+    .catch(err => console.error("Error al cargar confirmados:", err));
+    }
+  cargarConfirmados();
 // Función de normalización
 function normalizar(texto) {
   return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -103,6 +125,13 @@ function normalizar(texto) {
 
       const key = normalizar(nombre);
       const acomp = invitados[key];
+      
+    if (confirmados.has(key)) {
+    msg.textContent = `✅ ${nombre} ya está registrado. ¡Nos vemos en el evento!🥳`;
+    msg.style.color = "blue";
+    opciones.style.display = "none";
+    return;
+      }
 
       if (acomp) {
         msg.textContent = `${nombre.toUpperCase()} va ${acomp}.`;
