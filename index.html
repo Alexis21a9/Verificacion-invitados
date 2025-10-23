@@ -79,22 +79,13 @@ fetch("invitados.txt")
   .catch(err => console.error("Error cargando invitados.txt:", err));
 
 // Cargar lista de confirmados desde Google Sheets API
-function cargarConfirmados() {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!B:C?key=${API_KEY}`;
-  
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      if (!data.values) return;
-      data.values.slice(1).forEach(fila => {
-        const nombre = fila[1]; // columna B
-        if (nombre) confirmados.add(normalizar(nombre));
-      });
-      console.log("Confirmados:", confirmados);
-    })
-    .catch(err => console.error("Error al cargar confirmados:", err));
-    }
-  cargarConfirmados();
+  fetch("https://script.google.com/macros/s/AKfycbxqbLfiCOLk835GRMo6niJHzZh67DNVbAideMTDlWNUyXhnNZ8CmruiObyeiJrsDv6n/exec")
+  .then(res => res.json())
+  .then(data => {
+      console.log(data); // Aquí están todos los confirmados
+      // Recorres data para ver si el invitado ya está registrado
+  })
+  .catch(err => console.error(err));
 // Función de normalización
 function normalizar(texto) {
   return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
