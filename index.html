@@ -82,20 +82,14 @@ fetch("invitados.txt")
 
 const API_URL = "https://script.google.com/macros/s/AKfycbxqbLfiCOLk835GRMo6niJHzZh67DNVbAideMTDlWNUyXhnNZ8CmruiObyeiJrsDv6n/exec";
 
-fetch(API_URL)
-  .then(res => res.json())
-  .then(data => {
-      // data es un array de objetos [{Nombre: ..., Acompañante: ..., Confirmación: ...}]
-      // recorres data para ver si el invitado ya confirmó
-  })
-  .catch(err => console.error(err));
-// Función de normalización
-function normalizar(texto) {
-  return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
 // El resto del código de verificación y envío permanece igual
-
+fetch(API_URL)
+  .then(res => {
+      console.log(res); // esto te muestra el Response
+      return res.json();
+  })
+  .then(data => console.log(data))
+  .catch(err => console.error("Error al consultar confirmados:", err));
 
     function normalizar(texto) {
       return texto.toLowerCase()
