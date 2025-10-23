@@ -79,11 +79,14 @@ fetch("invitados.txt")
   .catch(err => console.error("Error cargando invitados.txt:", err));
 
 // Cargar lista de confirmados desde Google Sheets API
-  fetch("https://script.google.com/macros/s/AKfycbxqbLfiCOLk835GRMo6niJHzZh67DNVbAideMTDlWNUyXhnNZ8CmruiObyeiJrsDv6n/exec")
+
+const API_URL = "https://script.google.com/macros/s/AKfycbxqbLfiCOLk835GRMo6niJHzZh67DNVbAideMTDlWNUyXhnNZ8CmruiObyeiJrsDv6n/exec";
+
+fetch(API_URL)
   .then(res => res.json())
   .then(data => {
-      console.log(data); // Aquí están todos los confirmados
-      // Recorres data para ver si el invitado ya está registrado
+      // data es un array de objetos [{Nombre: ..., Acompañante: ..., Confirmación: ...}]
+      // recorres data para ver si el invitado ya confirmó
   })
   .catch(err => console.error(err));
 // Función de normalización
@@ -116,26 +119,43 @@ function normalizar(texto) {
 
       const key = normalizar(nombre);
       const acomp = invitados[key];
-      
-    if (confirmados.has(key)) {
-    msg.textContent = `✅ ${nombre} ya está registrado. ¡Nos vemos en el evento!🥳`;
-    msg.style.color = "blue";
-    opciones.style.display = "none";
-    return;
-      }
 
-      if (acomp) {
+      
+
+       if (!acomp) {
+    msg.textContent = "Lo siento, no estás en la lista.";
+    msg.style.color = "red";
+    opciones.style.display = "none";
+    invitadoEncontrado = null;
+    return;
+  }
+
+  // Si está en la lista local, consultamos Apps Script para ver si ya confirmó
+  fetch("https://script.google.com/macros/s/TU_ID_DE_DEPLOY/exec")
+    .then(res => res.json())
+    .then(data => {
+      // data = array de objetos {Nombre, Acompañante, Confirmación}
+      const registrado = data.find(item => normalizar(item.Nombre) === key);
+
+      if (registrado) {
+        msg.textContent = `${registrado.Nombre} ya está registrado con ${registrado.Acompañante}.`;
+        msg.style.color = "orange";
+        opciones.style.display = "none"; // no mostramos botones si ya confirmó
+        invitadoEncontrado = null;
+      } else {
         msg.textContent = `${nombre.toUpperCase()} va ${acomp}.`;
         msg.style.color = "green";
-        opciones.style.display = "block";
+        opciones.style.display = "block"; // mostramos botones para confirmar
         invitadoEncontrado = { nombre, acompanante: acomp };
-      } else {
-        msg.textContent = "Lo siento, no estás en la lista.";
-        msg.style.color = "red";
-        opciones.style.display = "none";
-        invitadoEncontrado = null;
       }
-    }
+    })
+    .catch(err => {
+      console.error("Error al consultar confirmados:", err);
+      msg.textContent = "Error al verificar confirmación. Intenta más tarde.";
+      msg.style.color = "red";
+      opciones.style.display = "none";
+    });
+}
 
     function confirmarAsistencia(viene) {
       if (!invitadoEncontrado) return;
