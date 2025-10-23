@@ -131,7 +131,7 @@ function normalizar(texto) {
   }
 
   // Si está en la lista local, consultamos Apps Script para ver si ya confirmó
-  fetch("https://script.google.com/macros/s/TU_ID_DE_DEPLOY/exec")
+  fetch(API_URL)
     .then(res => res.json())
     .then(data => {
       // data = array de objetos {Nombre, Acompañante, Confirmación}
