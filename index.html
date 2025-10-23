@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Confirmación de Invitados(Nombre Y apellido)</title>
+  <title>Confirmación de Invitados</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -40,7 +40,7 @@
   </style>
 </head>
 <body>
-  <h1>Confirmación de Invitados</h1>
+  <h1>Confirmación de Invitados\n(Nombre y Apellido)</h1>
   <input type="text" id="nombre" placeholder="Ingrese su nombre completo">
   <button onclick="verificarInvitado()">Verificar</button>
 
@@ -133,7 +133,7 @@
         );
 
         if (registrado) {
-          msg.textContent = `${registrado["Nombre del invitado"]} ya está registrado con ${registrado["Nombre de acompañante/s"]}.`;
+          msg.textContent = `${registrado["Nombre del invitado"]} ya está registrado.`;
           msg.style.color = "orange";
           opciones.style.display = "none";
           invitadoEncontrado = null;
