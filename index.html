@@ -93,59 +93,58 @@ fetch(API_URL)
 
     let invitadoEncontrado = null;
 
-    window.verificarInvitado() = function() {
-      const nombre = document.getElementById("nombre").value.trim();
-      const msg = document.getElementById("mensaje");
-      const opciones = document.getElementById("opciones");
+window.verificarInvitado = function() {
+    const nombre = document.getElementById("nombre").value.trim();
+    const msg = document.getElementById("mensaje");
+    const opciones = document.getElementById("opciones");
 
-      if (!nombre) {
+    if (!nombre) {
         msg.textContent = "Por favor, ingrese su nombre.";
         msg.style.color = "red";
         opciones.style.display = "none";
         return;
-      }
+    }
 
-      const key = normalizar(nombre);
-      const acomp = invitados[key];
+    const key = normalizar(nombre);
+    const acomp = invitados[key];
 
-      
+    if (!acomp) {
+        msg.textContent = "Lo siento, no estás en la lista.";
+        msg.style.color = "red";
+        opciones.style.display = "none";
+        invitadoEncontrado = null;
+        return;
+    }
 
-       if (!acomp) {
-    msg.textContent = "Lo siento, no estás en la lista.";
-    msg.style.color = "red";
-    opciones.style.display = "none";
-    invitadoEncontrado = null;
-    return;
-  }
+    // Consultar Apps Script
+    fetch(API_URL)
+        .then(res => res.json())
+        .then(data => {
+            const registrado = data.find(item => {
+                if (!item["Nombre del Invitado"]) return false;
+                return normalizar(item["Nombre del Invitado"]) === key;
+            });
 
-  // Si está en la lista local, consultamos Apps Script para ver si ya confirmó
-  fetch(API_URL)
-    .then(res => res.json())
-    .then(data => {
-      // data = array de objetos {Nombre, Acompañante, Confirmación}
-      const registrado = data.find(item => {
-    if (!item["Nombre del Invitado"]) return false; 
-    return normalizar(item["Nombre del Invitado"]) === key;
-});
-
-if (registrado) {
-    msg.textContent = `${registrado["Nombre del Invitado"]} ya está registrado con ${registrado["Nombre de acompañante/s"]}.`;
-    msg.style.color = "orange";
-    opciones.style.display = "none"; // no mostramos botones si ya confirmó
-    invitadoEncontrado = null;
-} else {
-    msg.textContent = `${nombre.toUpperCase()} va ${acomp}.`;
-    msg.style.color = "green";
-    opciones.style.display = "block"; // mostramos botones para confirmar
-    invitadoEncontrado = { nombre, acompanante: acomp };
-}
-    .catch(err => {
-      console.error("Error al consultar confirmados:", err);
-      msg.textContent = "Error al verificar confirmación. Intenta más tarde.";
-      msg.style.color = "red";
-      opciones.style.display = "none";
-    });
+            if (registrado) {
+                msg.textContent = `${registrado["Nombre del invitado"]} ya está registrado con ${registrado["Nombre de acompañante/s"]}.`;
+                msg.style.color = "orange";
+                opciones.style.display = "none";
+                invitadoEncontrado = null;
+            } else {
+                msg.textContent = `${nombre.toUpperCase()} va con ${acomp}.`;
+                msg.style.color = "green";
+                opciones.style.display = "block";
+                invitadoEncontrado = { nombre, acompanante: acomp };
+            }
+        })
+        .catch(err => {
+            console.error("Error al consultar confirmados:", err);
+            msg.textContent = "Error al verificar confirmación. Intenta más tarde.";
+            msg.style.color = "red";
+            opciones.style.display = "none";
+        });
 };
+
 
     function confirmarAsistencia(viene) {
       if (!invitadoEncontrado) return;
