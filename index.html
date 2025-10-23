@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Confirmación de Invitados</title>
+  <title>Confirmación de Invitados(Nombre Y apellido)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -41,7 +41,7 @@
 </head>
 <body>
   <h1>Confirmación de Invitados</h1>
-  <input type="text" id="nombre" placeholder="Ingrese su nombre completo\n(Nombre y Apellido)">
+  <input type="text" id="nombre" placeholder="Ingrese su nombre completo">
   <button onclick="verificarInvitado()">Verificar</button>
 
   <div id="mensaje"></div>
@@ -128,8 +128,8 @@
 
         // Buscar si ya está en la lista de confirmados
         const registrado = data.find(item =>
-          item["Nombre del Invitado"] &&
-          normalizar(item["Nombre del Invitado"]) === key
+          item["Nombre del invitado"] &&
+          normalizar(item["Nombre del invitado"]) === key
         );
 
         if (registrado) {
