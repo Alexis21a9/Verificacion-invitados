@@ -40,7 +40,7 @@
   </style>
 </head>
 <body>
-  <h1>Confirmación de Invitados\n(Nombre y Apellido)</h1>
+  <h1>Confirmación de Invitados (Nombre y Apellido)</h1>
   <input type="text" id="nombre" placeholder="Ingrese su nombre completo">
   <button onclick="verificarInvitado()">Verificar</button>
 
@@ -52,22 +52,15 @@
   </div>
 
   <script>
-    // 🔹 URL del Apps Script desplegado (modo Web App)
     const API_URL = "https://script.google.com/macros/s/AKfycbxqbLfiCOLk835GRMo6niJHzZh67DNVbAideMTDlWNUyXhnNZ8CmruiObyeiJrsDv6n/exec";
-
-    // 🔹 URL del formulario de Google Forms (para registrar la respuesta)
     const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScMvzxj6LL3F-FxWJvlcaBfbgnB-vKVw6zReEeaAOYwtlGJmg/formResponse";
-
-    // 🔹 IDs de los campos del formulario (reemplazá con los tuyos si cambian)
     const ENTRY_NOMBRE = "entry.2062533621";
     const ENTRY_ACOMP = "entry.490039814";
     const ENTRY_CONFIRM = "entry.2005093304";
 
-    // 🔹 Lista local de invitados
     let invitados = {};
     let invitadoEncontrado = null;
 
-    // Normalizar texto (minúsculas, sin tildes)
     function normalizar(texto) {
       return texto.toLowerCase()
         .normalize("NFD")
@@ -75,7 +68,16 @@
         .trim();
     }
 
-    // Cargar el archivo de invitados.txt
+    // 🔠 Función para poner mayúsculas en las primeras letras de cada palabra
+    function capitalizarNombre(texto) {
+      return texto
+        .toLowerCase()
+        .split(" ")
+        .filter(p => p.trim() !== "")
+        .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+        .join(" ");
+    }
+
     fetch("invitados.txt")
       .then(response => response.text())
       .then(texto => {
@@ -93,7 +95,6 @@
       })
       .catch(err => console.error("Error cargando invitados.txt:", err));
 
-    // 🔹 Verificación principal
     async function verificarInvitado() {
       const nombre = document.getElementById("nombre").value.trim();
       const msg = document.getElementById("mensaje");
@@ -124,24 +125,21 @@
         const res = await fetch(API_URL);
         const data = await res.json();
 
-        console.log("📋 Datos recibidos:", data);
-
-        // Buscar si ya está en la lista de confirmados
         const registrado = data.find(item =>
           item["Nombre del invitado"] &&
           normalizar(item["Nombre del invitado"]) === key
         );
 
         if (registrado) {
-          msg.textContent = `${registrado["Nombre del invitado"]} ya está registrado.`;
+          msg.textContent = `${registrado["Nombre del invitado"]} ya está registrado con ${registrado["Nombre acompañante/s"]}.`;
           msg.style.color = "orange";
           opciones.style.display = "none";
           invitadoEncontrado = null;
         } else {
-          msg.textContent = `${nombre.toUpperCase()} va con ${acomp}.`;
+          msg.textContent = `${capitalizarNombre(nombre)} va ${acomp}.`;
           msg.style.color = "green";
           opciones.style.display = "block";
-          invitadoEncontrado = { nombre, acompanante: acomp };
+          invitadoEncontrado = { nombre: capitalizarNombre(nombre), acompanante: acomp };
         }
       } catch (err) {
         console.error("Error al consultar confirmados:", err);
@@ -151,7 +149,6 @@
       }
     }
 
-    // 🔹 Confirmar asistencia
     function confirmarAsistencia(viene) {
       if (!invitadoEncontrado) return;
 
