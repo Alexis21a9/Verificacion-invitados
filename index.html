@@ -132,16 +132,17 @@ window.verificarInvitado = function() {
                 return normalizar(item["Nombre del Invitado"]) === key;
             });
 
-            if (registrado) {
-                msg.textContent = `${registrado["Nombre del invitado"]} ya está registrado con ${registrado["Nombre de acompañante/s"]}.`;
-                msg.style.color = "orange";
-                opciones.style.display = "none";
-                invitadoEncontrado = null;
-            } else {
-                msg.textContent = `${nombre.toUpperCase()} va con ${acomp}.`;
-                msg.style.color = "green";
-                opciones.style.display = "block";
-                invitadoEncontrado = { nombre, acompanante: acomp };
+            if (registrado && registrado["Confirmación"] === "Si voy") {
+              msg.textContent = `${registrado["Nombre del Invitado"]} ya está registrado con ${registrado["Nombre de acompañante/s"]}.`;
+              msg.style.color = "orange";
+              opciones.style.display = "none";
+              invitadoEncontrado = null;
+            } 
+            else {
+              msg.textContent = `${nombre.toUpperCase()} va con ${acomp}.`;
+              msg.style.color = "green";
+              opciones.style.display = "block";
+              invitadoEncontrado = { nombre, acompanante: acomp };
             }
         })
         .catch(error => {
