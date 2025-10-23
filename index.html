@@ -144,6 +144,8 @@ window.verificarInvitado = function() {
               opciones.style.display = "block";
               invitadoEncontrado = { nombre, acompanante: acomp };
             }
+          console.log("Buscando:", key);
+console.log("Datos recibidos:", data);
         })
         .catch(error => {
             console.error("Error al consultar confirmados:", err);
