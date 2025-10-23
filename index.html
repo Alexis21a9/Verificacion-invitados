@@ -41,7 +41,7 @@
 </head>
 <body>
   <h1>Confirmación de Invitados</h1>
-  <input type="text" id="nombre" placeholder="Ingrese su nombre completo">
+  <input type="text" id="nombre" placeholder="Ingrese su nombre completo\n(Nombre y Apellido)">
   <button onclick="verificarInvitado()">Verificar</button>
 
   <div id="mensaje"></div>
@@ -133,7 +133,7 @@
         );
 
         if (registrado) {
-          msg.textContent = `${registrado["Nombre del Invitado"]} ya está registrado con ${registrado["Nombre de acompañante/s"]}.`;
+          msg.textContent = `${registrado["Nombre del invitado"]} ya está registrado con ${registrado["Nombre de acompañante/s"]}.`;
           msg.style.color = "orange";
           opciones.style.display = "none";
           invitadoEncontrado = null;
