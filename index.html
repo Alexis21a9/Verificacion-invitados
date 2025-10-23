@@ -40,8 +40,8 @@
   </style>
 </head>
 <body>
-  <h1>Confirmación de Invitados(Nombre y apellido)</h1>
-  <input type="text" id="nombre" placeholder="Ingrese su nombre">
+  <h1>Confirmación de Invitados</h1>
+  <input type="text" id="nombre" placeholder="Ingrese su nombre completo">
   <button onclick="verificarInvitado()">Verificar</button>
 
   <div id="mensaje"></div>
@@ -51,115 +51,110 @@
     <button class="btnOpcion" onclick="confirmarAsistencia(false)">❌ No voy</button>
   </div>
 
-<script>
-const SHEET_ID = "1UPb80Riwp8pLZkEB3KA3u3qNtC-eHNUEF-4gZULGugI"; // 👈 tu ID de hoja
-const API_KEY = "AIzaSyBFM3ZBXypWtwGY1zIt0ANiOykL6GbKWVQ";   // 👈 tu API key real
-const SHEET_NAME = "Respuestas de formulario 1";     // 👈 nombre exacto de tu hoja
+  <script>
+    // 🔹 URL del Apps Script desplegado (modo Web App)
+    const API_URL = "https://script.google.com/macros/s/AKfycbxqbLfiCOLk835GRMo6niJHzZh67DNVbAideMTDlWNUyXhnNZ8CmruiObyeiJrsDv6n/exec";
 
-let invitados = {};
-let confirmados = new Set();
+    // 🔹 URL del formulario de Google Forms (para registrar la respuesta)
+    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScMvzxj6LL3F-FxWJvlcaBfbgnB-vKVw6zReEeaAOYwtlGJmg/formResponse";
 
-// Cargar el archivo invitados.txt
-fetch("invitados.txt")
-  .then(response => response.text())
-  .then(texto => {
-    const lineas = texto.split("\n");
-    lineas.forEach(linea => {
-      const partes = linea.split(",");
-      if (partes.length === 2) {
-        const nombre = partes[0].trim();
-        const acompanante = partes[1].trim();
-        // Normalizamos el nombre para búsqueda insensible a mayúsculas y tildes
-        const key = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        invitados[key] = acompanante;
-      }
-    });
-    console.log("Invitados cargados:", invitados);
-  })
-  .catch(err => console.error("Error cargando invitados.txt:", err));
+    // 🔹 IDs de los campos del formulario (reemplazá con los tuyos si cambian)
+    const ENTRY_NOMBRE = "entry.2062533621";
+    const ENTRY_ACOMP = "entry.490039814";
+    const ENTRY_CONFIRM = "entry.2005093304";
 
-// Cargar lista de confirmados desde Google Sheets API
+    // 🔹 Lista local de invitados
+    let invitados = {};
+    let invitadoEncontrado = null;
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxqbLfiCOLk835GRMo6niJHzZh67DNVbAideMTDlWNUyXhnNZ8CmruiObyeiJrsDv6n/exec";
-
-// El resto del código de verificación y envío permanece igual
-fetch(API_URL)
-  .then(res => {
-      console.log(res); // esto te muestra el Response
-      return res.json();
-  })
-  .then(data => console.log(data))
-  .catch(err => console.error("Error al consultar confirmados:", err));
-
-
+    // Normalizar texto (minúsculas, sin tildes)
     function normalizar(texto) {
       return texto.toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
     }
 
-    let invitadoEncontrado = null;
+    // Cargar el archivo de invitados.txt
+    fetch("invitados.txt")
+      .then(response => response.text())
+      .then(texto => {
+        const lineas = texto.split("\n");
+        lineas.forEach(linea => {
+          const partes = linea.split(",");
+          if (partes.length >= 2) {
+            const nombre = partes[0].trim();
+            const acompanante = partes.slice(1).join(",").trim();
+            const key = normalizar(nombre);
+            invitados[key] = acompanante;
+          }
+        });
+        console.log("✅ Invitados cargados:", invitados);
+      })
+      .catch(err => console.error("Error cargando invitados.txt:", err));
 
-window.verificarInvitado = function() {
-    const nombre = document.getElementById("nombre").value.trim();
-    const msg = document.getElementById("mensaje");
-    const opciones = document.getElementById("opciones");
+    // 🔹 Verificación principal
+    async function verificarInvitado() {
+      const nombre = document.getElementById("nombre").value.trim();
+      const msg = document.getElementById("mensaje");
+      const opciones = document.getElementById("opciones");
 
-    if (!nombre) {
+      if (!nombre) {
         msg.textContent = "Por favor, ingrese su nombre.";
         msg.style.color = "red";
         opciones.style.display = "none";
         return;
-    }
+      }
 
-    const key = normalizar(nombre);
-    const acomp = invitados[key];
+      const key = normalizar(nombre);
+      const acomp = invitados[key];
 
-    if (!acomp) {
+      if (!acomp) {
         msg.textContent = "Lo siento, no estás en la lista.";
         msg.style.color = "red";
         opciones.style.display = "none";
-        invitadoEncontrado = null;
         return;
+      }
+
+      msg.textContent = "Verificando si ya estás confirmado...";
+      msg.style.color = "gray";
+      opciones.style.display = "none";
+
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+
+        console.log("📋 Datos recibidos:", data);
+
+        // Buscar si ya está en la lista de confirmados
+        const registrado = data.find(item =>
+          item["Nombre del Invitado"] &&
+          normalizar(item["Nombre del Invitado"]) === key
+        );
+
+        if (registrado) {
+          msg.textContent = `${registrado["Nombre del Invitado"]} ya está registrado con ${registrado["Nombre de acompañante/s"]}.`;
+          msg.style.color = "orange";
+          opciones.style.display = "none";
+          invitadoEncontrado = null;
+        } else {
+          msg.textContent = `${nombre.toUpperCase()} va con ${acomp}.`;
+          msg.style.color = "green";
+          opciones.style.display = "block";
+          invitadoEncontrado = { nombre, acompanante: acomp };
+        }
+      } catch (err) {
+        console.error("Error al consultar confirmados:", err);
+        msg.textContent = "Error al verificar confirmación. Intenta más tarde.";
+        msg.style.color = "red";
+        opciones.style.display = "none";
+      }
     }
 
-    // Consultar Apps Script
-    fetch(API_URL)
-        .then(res => res.json())
-        .then(data => {
-            const registrado = data.find(item => {
-                if (!item["Nombre del Invitado"]) return false;
-                return normalizar(item["Nombre del Invitado"]) === key;
-            });
-
-            if (registrado && registrado["Confirmación"] === "Si voy") {
-              msg.textContent = `${registrado["Nombre del Invitado"]} ya está registrado con ${registrado["Nombre de acompañante/s"]}.`;
-              msg.style.color = "orange";
-              opciones.style.display = "none";
-              invitadoEncontrado = null;
-            } 
-            else {
-              msg.textContent = `${nombre.toUpperCase()} va con ${acomp}.`;
-              msg.style.color = "green";
-              opciones.style.display = "block";
-              invitadoEncontrado = { nombre, acompanante: acomp };
-            }
-          console.log("Buscando:", key);
-console.log("Datos recibidos:", data);
-        })
-        .catch(error => {
-            console.error("Error al consultar confirmados:", err);
-            msg.textContent = "Error al verificar confirmación. Intenta más tarde.";
-            msg.style.color = "red";
-            opciones.style.display = "none";
-        })
-};
-
-
+    // 🔹 Confirmar asistencia
     function confirmarAsistencia(viene) {
       if (!invitadoEncontrado) return;
 
-      // 🟢 Mostrar mensaje de confirmación antes de enviar
       const textoConfirmacion = `${invitadoEncontrado.nombre} va con ${invitadoEncontrado.acompanante}.`;
       const confirmar = confirm(`${textoConfirmacion}\n\n¿Desea confirmar que ${viene ? "ASISTIRÁ" : "NO ASISTIRÁ"}?`);
 
@@ -168,16 +163,12 @@ console.log("Datos recibidos:", data);
         return;
       }
 
-      // URL de Google Form
-      const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScMvzxj6LL3F-FxWJvlcaBfbgnB-vKVw6zReEeaAOYwtlGJmg/formResponse";
-
-      // Campos del formulario (IDs correctos)
       const data = new FormData();
-      data.append("entry.2062533621", invitadoEncontrado.nombre);         // Nombre del invitado
-      data.append("entry.490039814", invitadoEncontrado.acompanante);   // Acompañante
-      data.append("entry.2005093304", viene ? "Si voy" : "No voy"); // Confirmación
+      data.append(ENTRY_NOMBRE, invitadoEncontrado.nombre);
+      data.append(ENTRY_ACOMP, invitadoEncontrado.acompanante);
+      data.append(ENTRY_CONFIRM, viene ? "Si voy" : "No voy");
 
-      fetch(formURL, {
+      fetch(FORM_URL, {
         method: "POST",
         mode: "no-cors",
         body: data
@@ -185,6 +176,8 @@ console.log("Datos recibidos:", data);
       .then(() => {
         alert(`Respuesta registrada: ${viene ? "✅ Asistirá" : "❌ No asistirá"}. ¡Gracias!`);
         document.getElementById("opciones").style.display = "none";
+        document.getElementById("mensaje").textContent = "Tu respuesta fue enviada correctamente.";
+        document.getElementById("mensaje").style.color = "green";
       })
       .catch(error => {
         console.error("Error al enviar:", error);
